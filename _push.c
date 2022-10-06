@@ -1,49 +1,54 @@
-#include "monty.h"
 /**
- * _push - function that adds a node
- * @stack: list
- * @line_number: number of line of the command
- * @token: the number to add in the node
+ * monty_push - Pushes a value to a stack_t linked list.
+ * @stack: A pointer to the top mode node of a stack_t linked list.
+ * @line_number: The current working line number of a Monty bytecodes file.
  */
-
-void _push(char *token, stack_t **stack, unsigned int line_number)
+void monty_push(stack_t **stack, unsigned int line_number)
 {
-	stack_t *new = NULL;
+	stack_t *tmp, *new;
 	int i;
 
-	if (token == NULL)
+	new = malloc(sizeof(stack_t));
+	if (new == NULL)
 	{
-		fprintf(stderr, "L%d: usage: push integer\n", line_number);
-		error = 1;
+		set_op_tok_error(malloc_error());
 		return;
 	}
-	for (i = 0; token[i] != '\0'; i++)
+
+	if (op_toks[1] == NULL)
 	{
-		if (token[i] == '-')
-			i++;
-		if (isdigit(token[i]) == 0)
+		set_op_tok_error(no_int_error(line_number));
+		return;
+	}
+
+	for (i = 0; op_toks[1][i]; i++)
+	{
+		if (op_toks[1][i] == '-' && i == 0)
+			continue;
+		if (op_toks[1][i] < '0' || op_toks[1][i] > '9')
 		{
-			fprintf(stderr, "L%d: usage: push integer\n", line_number);
-			error = 1;
+			set_op_tok_error(no_int_error(line_number));
 			return;
 		}
 	}
-	new = malloc(sizeof(stack_t));
+	new->n = atoi(op_toks[1]);
 
-	if (new == NULL)
+	if (check_mode(*stack) == STACK) /* STACK mode insert at front */
 	{
-		perror("Error: malloc failed\n");
-		error = 1;
-		return;
+		tmp = (*stack)->next;
+		new->prev = *stack;
+		new->next = tmp;
+		if (tmp)
+			tmp->prev = new;
+		(*stack)->next = new;
 	}
-	new->n = atoi(token);
-	new->prev = NULL;
-	new->next = NULL;
-
-	if (*stack)
+	else /* QUEUE mode insert at end */
 	{
-		(*stack)->prev = new;
-		new->next = *stack;
+		tmp = *stack;
+		while (tmp->next)
+			tmp = tmp->next;
+		new->prev = tmp;
+		new->next = NULL;
+		tmp->next = new;
 	}
-	*stack = new;
 }
