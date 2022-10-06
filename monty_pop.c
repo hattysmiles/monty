@@ -1,3 +1,4 @@
+#include "monty.h"
 /**
  * monty_pop - Removes the top value element of a stack_t linked list.
  * @stack: A pointer to the top mode node of a stack_t linked list.
